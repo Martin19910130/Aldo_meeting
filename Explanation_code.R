@@ -65,6 +65,7 @@ dat <- read.csv("https://raw.githubusercontent.com/Martin19910130/Aldo_meeting/m
 
 ## survival 
 glm(survival ~ size_t0 * climate, data = dat) %>% summary()
+lm(size_t1 ~ size_t0 * climate, data = dat) %>% summary()
 
 ## Aldos bin plot
 plot_binned_prop <- function(df, n_bins, siz_var, rsp_var){
@@ -110,9 +111,23 @@ plot_binned_prop <- function(df, n_bins, siz_var, rsp_var){
   
 }
 
-ggplot(dat, aes(x = size_t0, y = survival)) + geom_blank() + 
-  geom_point(data = plot_binned_prop(dat %>% subset(climate == "ambient"), 10, size_t0, survival),
+## survival
+ggplot(dat, aes(x = size_t0, y = survival, color = climate)) + geom_blank() + 
+  geom_point(data = plot_binned_prop(dat %>% subset(climate == "ambient"), 10, 
+                                     size_t0, survival),
              mapping = aes(x = x_binned, y = y_binned), color = "#0072B2") + 
-  geom_point(data = plot_binned_prop(dat %>% subset(climate == "future"), 10, size_t0, survival),
-             mapping = aes(x = x_binned, y = y_binned), color = "#D55E00") + theme_bw()
+  geom_point(data = plot_binned_prop(dat %>% subset(climate == "future"), 10, 
+                                     size_t0, survival),
+             mapping = aes(x = x_binned, y = y_binned), color = "#D55E00") + 
+  theme_bw() + geom_smooth(method = "glm", method.args = list(family = "binomial"), se = F) + 
+  scale_color_manual(values = c("#0072B2", "#D55E00"))
 
+ggplot(dat, aes(x = size_t0, y = size_t1, color = climate)) + geom_point() + 
+  theme_bw() + geom_smooth(method = "lm", se = F) + 
+  scale_color_manual(values = c("#0072B2", "#D55E00"))
+
+
+pars <- c(surv_inter_amb,
+          surv_slope_amb,
+          surv_inter_fut,
+          surv_slope_fut,)
